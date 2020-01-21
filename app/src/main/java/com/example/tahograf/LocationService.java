@@ -68,7 +68,7 @@ public class LocationService extends Service
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     mGoogleApiClient, mlLocationRequest, this);
         } catch (SecurityException ex){
-
+            Log.e("MAPE","EX = "+ex.getMessage());
         }
 
     }
@@ -92,6 +92,9 @@ public class LocationService extends Service
     @Override
     public void onLocationChanged(Location location) {
         MainActivity.locateDialog.dismiss();
+        if (location.equals(endLocation)) {
+            Log.w("MAPE","Nije se desio pomeraj!!!");
+        }
         currentLocation = location;
         endLocation = currentLocation;
         if (startLocation == null) {
@@ -115,8 +118,8 @@ public class LocationService extends Service
 
     private void updateUI() {
         if (MainActivity.p == 0 ) {
-//            distance = distance + (startLocation.distanceTo(endLocation) / 1000.00);
-            distance = (startLocation.distanceTo(endLocation));
+            distance = distance + (startLocation.distanceTo(endLocation) / 1000.00);
+//            distance = (startLocation.distanceTo(endLocation));
             Log.i("MAPE"," distance = "+distance);
             MainActivity.endTime = System.currentTimeMillis();
             long diff = MainActivity.endTime - MainActivity.startTime;
@@ -127,8 +130,20 @@ public class LocationService extends Service
             } else {
                 MainActivity.tv_speed.setText("............." );
             }
+            MainActivity.tv_distance.setText(new DecimalFormat("#.###").format(distance) + " Km's.");
             startLocation = endLocation;
 
         }
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        stopLocationUpdates();
+        if (mGoogleApiClient.isConnected())
+            mGoogleApiClient.disconnect();
+        startLocation = null;
+        endLocation = null;
+        distance = 0;
+        return super.onUnbind(intent);
     }
 }

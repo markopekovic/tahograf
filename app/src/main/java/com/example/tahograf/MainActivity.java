@@ -37,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
     static int p = 0;
 
     static TextView tv_speed;
-    Button start, stop;
+    static TextView tv_distance;
+    Button start, stop, pause;
 
     private ServiceConnection sc = new ServiceConnection() {
         @Override
@@ -119,9 +120,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tv_speed = findViewById(R.id.tv_speed);
+        tv_speed = findViewById(R.id.speedtext);
+        tv_distance = findViewById(R.id.distancetext);
 
         start = findViewById(R.id.start);
+        pause = findViewById(R.id.pause);
         stop = findViewById(R.id.stop);
 
 
@@ -144,8 +147,30 @@ public class MainActivity extends AppCompatActivity {
                 locateDialog.setCancelable(false);
                 locateDialog.setMessage("Getting location...");
                 locateDialog.show();
+                start.setVisibility(View.GONE);
+                pause.setVisibility(View.VISIBLE);
+                pause.setText("Pause");
+                stop.setVisibility(View.VISIBLE);
 
+            }
+        });
 
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (pause.getText().toString().equalsIgnoreCase("pause")) {
+                    pause.setText("Resume");
+                    p = 1;
+                } else if (pause.getText().toString().equalsIgnoreCase("Resume")) {
+                    checkGps();
+                    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        //Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    pause.setText("Pause");
+                    p=0;
+                }
             }
         });
 
@@ -155,6 +180,10 @@ public class MainActivity extends AppCompatActivity {
                 if (connectionStatus) {
                     unbindService();
                 }
+                start.setVisibility(View.VISIBLE);
+                pause.setVisibility(View.GONE);
+                pause.setText("Pause");
+                stop.setVisibility(View.GONE);
                 p = 0;
             }
         });
